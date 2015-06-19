@@ -1,4 +1,4 @@
-;;; flycheck-liquid.el --- A flycheck checker for Haskell using liquid (i.e. liquidhaskell)
+;;; flycheck-liquidhs.el --- A flycheck checker for Haskell using liquid (i.e. liquidhaskell)
 
 ;; Modified from flycheck-hdevtools.el by Steve Purcell
 
@@ -30,7 +30,7 @@
 
 ;;;; Setup
 
-;; (eval-after-load 'flycheck '(require 'flycheck-liquid))
+;; (eval-after-load 'flycheck '(require 'flycheck-liquidhs))
 
 ;;; Code:
 
