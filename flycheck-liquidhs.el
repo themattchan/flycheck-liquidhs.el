@@ -79,5 +79,48 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
 
 (add-to-list 'flycheck-checkers 'haskell-liquid)
 
+(flycheck-define-checker haskell-stack-liquid
+  "A Haskell refinement type checker using liquidhaskell.
+
+See URL `https://github.com/ucsd-progsys/liquidhaskell'."
+  :command
+  ("stack" "exec" "--" "liquid" source-inplace)
+  ;; ("~/bin/Checker.hs" source-inplace)
+  :error-patterns
+  (
+   (error line-start " " (file-name) ":" line ":" column ":"
+          (message
+       (one-or-more " ") (one-or-more not-newline)
+       (zero-or-more "\n"
+             (one-or-more " ")
+             (zero-or-more not-newline)))
+          line-end)
+
+   (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
+      (message
+       (one-or-more " ") (one-or-more not-newline)
+       (zero-or-more "\n"
+             (one-or-more " ")
+             (zero-or-more not-newline)))
+          line-end)
+
+   (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
+      (message
+       (one-or-more " ") (one-or-more not-newline)
+       (zero-or-more "\n"
+             (one-or-more " ")
+             (zero-or-more not-newline)))
+          line-end)
+   )
+  :error-filter
+  (lambda (errors)
+    (-> errors
+        flycheck-dedent-error-messages
+        flycheck-sanitize-errors))
+  :modes (haskell-mode literate-haskell-mode)
+  :next-checkers ((warnings-only . haskell-hlint)))
+
+(add-to-list 'flycheck-checkers 'haskell-stack-liquid)
+
 (provide 'flycheck-liquidhs)
 ;;; flycheck-liquidhs.el ends here
