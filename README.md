@@ -26,7 +26,7 @@ In the .el file, change
 to
 
 ```
-:command ("stack ghci liquid" source-inplace)
+:command ("stack exec liquid" source-inplace)
 ```
 
 Non-hacky stack integration coming soon.
