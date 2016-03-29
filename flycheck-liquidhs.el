@@ -43,9 +43,9 @@
 
 See URL `https://github.com/ucsd-progsys/liquidhaskell'."
   :command
-  ((if flycheck-haskell-liquid-use-stack
-       (concat stack-mode-proc-path " exec liquid")
-     "liquid")
+  ((eval (if flycheck-haskell-liquid-use-stack
+             (concat stack-mode-proc-path " exec liquid")
+           "liquid"))
    source-inplace)
   ;; ("~/bin/Checker.hs" source-inplace)
   :error-patterns
