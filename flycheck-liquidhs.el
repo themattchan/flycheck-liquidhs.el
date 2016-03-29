@@ -36,12 +36,17 @@
 
 (require 'flycheck)
 
+(setq flycheck-haskell-liquid-use-stack nil) ; set this for stack
+
 (flycheck-define-checker haskell-liquid
   "A Haskell refinement type checker using liquidhaskell.
 
 See URL `https://github.com/ucsd-progsys/liquidhaskell'."
   :command
-  ("liquid" source-inplace)
+  ((if flycheck-haskell-liquid-use-stack
+       (concat stack-mode-proc-path " exec liquid")
+     "liquid")
+   source-inplace)
   ;; ("~/bin/Checker.hs" source-inplace)
   :error-patterns
   (
