@@ -36,46 +36,76 @@
 
 (require 'flycheck)
 
-(flycheck-define-checker haskell-liquid
-  "A Haskell refinement type checker using liquidhaskell.
+;; (shell-command (concat exe " " paramstr))
+;; (message (concat "'" exe "' not found found; please install"))))
+
+(defgroup flycheck-liquid nil
+  " LiquidHaskell type popup tooltip."
+  :group 'flycheck-options
+  :prefix "flycheck-liquid-")
+
+(defcustom flycheck-liquid-use-stack t  ;use stack by default
+  "Set popup style."
+  :type 'boolean
+  :group 'flycheck-liquid)
+
+
+(defmacro flycheck-liquid-generate-checker ()
+  "Generate a flycheck checker defn
+based on whether or not stack is installed"
+
+    `(flycheck-define-checker haskell-liquid
+       "A Haskell refinement type checker using liquidhaskell.
 
 See URL `https://github.com/ucsd-progsys/liquidhaskell'."
-  :command
-  ("liquid" source-inplace)
-  ;; ("~/bin/Checker.hs" source-inplace)
-  :error-patterns
-  (
-   (error line-start " " (file-name) ":" line ":" column ":"
-          (message
-       (one-or-more " ") (one-or-more not-newline)
-       (zero-or-more "\n"
-             (one-or-more " ")
-             (zero-or-more not-newline)))
-          line-end)
+       :command
+       (,(if (and flycheck-liquid-use-stack
+                  (executable-find "stack"))
+             "stack exec liquid"
+           "liquid")
+             source-inplace)
+       ;; ("~/bin/Checker.hs" source-inplace)
+       :error-patterns
+       (
+        (error line-start " " (file-name) ":" line ":" column ":"
+               (message
+                (one-or-more " ") (one-or-more not-newline)
+                (zero-or-more "\n"
+                              (one-or-more " ")
+                              (zero-or-more not-newline)))
+               line-end)
 
-   (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
-      (message
-       (one-or-more " ") (one-or-more not-newline)
-       (zero-or-more "\n"
-             (one-or-more " ")
-             (zero-or-more not-newline)))
-          line-end)
+        (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
+               (message
+                (one-or-more " ") (one-or-more not-newline)
+                (zero-or-more "\n"
+                              (one-or-more " ")
+                              (zero-or-more not-newline)))
+               line-end)
 
-   (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
-      (message
-       (one-or-more " ") (one-or-more not-newline)
-       (zero-or-more "\n"
-             (one-or-more " ")
-             (zero-or-more not-newline)))
-          line-end)
-   )
-  :error-filter
-  (lambda (errors)
-    (-> errors
-        flycheck-dedent-error-messages
-        flycheck-sanitize-errors))
-  :modes (haskell-mode literate-haskell-mode)
-  :next-checkers ((warnings-only . haskell-hlint)))
+        (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
+               (message
+                (one-or-more " ") (one-or-more not-newline)
+                (zero-or-more "\n"
+                              (one-or-more " ")
+                              (zero-or-more not-newline)))
+               line-end)
+        )
+       :error-filter
+       (lambda (errors)
+         (-> errors
+             flycheck-dedent-error-messages
+             flycheck-sanitize-errors))
+       :modes (haskell-mode literate-haskell-mode)
+       :next-checkers ((warnings-only . haskell-hlint))))
+
+;; Actually generate the macro
+;; TODO: a method to regenerate & reload the checker if the user changes the
+;; variable w/o reloading emacs
+;;
+;; TODO: use stack only if flycheck-haskell-stack-ghc is in use??? is this even possible
+
+(flycheck-liquid-generate-checker)
 
 (add-to-list 'flycheck-checkers 'haskell-liquid)
 
