@@ -59,7 +59,7 @@
 
 See URL `https://github.com/ucsd-progsys/liquidhaskell'."
        :command
-       ("stack exec liquid" source-inplace)
+       ("stack" "exec" "liquid" source-inplace)
 
        :error-patterns
        (
