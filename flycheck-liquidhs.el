@@ -49,43 +49,28 @@
   :type 'boolean
   :group 'flycheck-liquid)
 
+(defmacro make-liquid-checker (name command)
+  (let ((default-reporter
+          `((message
+            (one-or-more " ") (one-or-more not-newline)
+            (zero-or-more "\n"
+                          (one-or-more " ")
+                          (zero-or-more not-newline)))
+          line-end)))
 
-;; (defmacro flycheck-liquid-generate-checker ()
-;;   "Generate a flycheck checker defn
-;; based on whether or not stack is installed"
-
-(flycheck-define-checker haskell-liquid
+    `(flycheck-define-checker ,name
        "A Haskell refinement type checker using liquidhaskell.
 
-See URL `https://github.com/ucsd-progsys/liquidhaskell'."
-       :command
-       ("stack" "exec" "liquid" source-inplace)
+See URL 'https://github.com/ucsd-progsys/liquidhaskell'."
+       :command ,command
 
        :error-patterns
-       (
-        (error line-start " " (file-name) ":" line ":" column ":"
-               (message
-                (one-or-more " ") (one-or-more not-newline)
-                (zero-or-more "\n"
-                              (one-or-more " ")
-                              (zero-or-more not-newline)))
-               line-end)
-
+       ((error line-start " " (file-name) ":" line ":" column ":"
+               ,@default-reporter)
         (error line-start " " (file-name) ":" line ":" column "-" (one-or-more digit) ":"
-               (message
-                (one-or-more " ") (one-or-more not-newline)
-                (zero-or-more "\n"
-                              (one-or-more " ")
-                              (zero-or-more not-newline)))
-               line-end)
-
+               ,@default-reporter)
         (error line-start " " (file-name) ":(" line "," column ")-(" (one-or-more digit) "," (one-or-more digit) "):"
-               (message
-                (one-or-more " ") (one-or-more not-newline)
-                (zero-or-more "\n"
-                              (one-or-more " ")
-                              (zero-or-more not-newline)))
-               line-end)
+               ,@default-reporter)
         )
        :error-filter
        (lambda (errors)
@@ -94,16 +79,15 @@ See URL `https://github.com/ucsd-progsys/liquidhaskell'."
              flycheck-sanitize-errors))
        :modes (haskell-mode literate-haskell-mode)
        :next-checkers ((warnings-only . haskell-hlint)))
+    ))
 
-;; Actually generate the macro
-;; TODO: a method to regenerate & reload the checker if the user changes the
-;; variable w/o reloading emacs
-;;
-;; TODO: use stack only if flycheck-haskell-stack-ghc is in use??? is this even possible
+(make-liquid-checker haskell-liquid ("liquid" source-inplace))
+(make-liquid-checker haskell-stack-liquid ("stack" "exec" "--" "liquid" source-inplace))
 
-;;(flycheck-liquid-generate-checker)
-
-(add-to-list 'flycheck-checkers 'haskell-liquid)
+(add-to-list 'flycheck-checkers
+             (if flycheck-liquid-use-stack
+                 'haskell-stack-liquid
+               'haskell-liquid))
 
 (provide 'flycheck-liquidhs)
 ;;; flycheck-liquidhs.el ends here
